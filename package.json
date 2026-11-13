@@ -1,0 +1,12 @@
+{
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "data": "python pipeline/build.py",
+    "dev": "observable preview",
+    "build": "observable build"
+  },
+  "dependencies": {
+    "@observablehq/framework": "^1.13.4"
+  }
+}

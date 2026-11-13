@@ -1,0 +1,8 @@
+node_modules/
+dist/
+src/.observablehq/cache/
+__pycache__/
+data/raw/
+.claude/
+CLAUDE.md
+COMMENTS.md

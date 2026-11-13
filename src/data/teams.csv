@@ -1,0 +1,31 @@
+team,team_name,conference,wins,losses,win_pct,best_player_id,best_player,best_per,best_gp_pct,tm8_efg_on,tm8_efg_off,roster_per
+OKC,Oklahoma City Thunder,West,64,18,0.7805,1628983,Shai Gilgeous-Alexander,30.6730,0.8293,0.5652,0.5427,14.6411
+SAS,San Antonio Spurs,West,62,20,0.7561,1641705,Victor Wembanyama,29.8462,0.7805,0.5854,0.5405,14.7887
+DET,Detroit Pistons,East,60,22,0.7317,1631105,Jalen Duren,26.2155,0.8537,0.5267,0.5394,15.0925
+BOS,Boston Celtics,East,56,26,0.6829,1627759,Jaylen Brown,22.0603,0.8659,0.5734,0.5471,15.5546
+DEN,Denver Nuggets,West,54,28,0.6585,203999,Nikola Jokić,32.1966,0.7927,0.5982,0.5399,14.4195
+LAL,Los Angeles Lakers,West,53,29,0.6463,1629029,Luka Dončić,27.7962,0.7805,0.5936,0.5594,14.2575
+NYK,New York Knicks,East,53,29,0.6463,1626157,Karl-Anthony Towns,21.9843,0.9146,0.5708,0.5430,15.2501
+CLE,Cleveland Cavaliers,East,52,30,0.6341,1628378,Donovan Mitchell,22.9503,0.8537,0.5800,0.5406,14.9852
+HOU,Houston Rockets,West,52,30,0.6341,1630578,Alperen Sengun,21.4416,0.8780,0.5531,0.5324,15.5059
+MIN,Minnesota Timberwolves,West,49,33,0.5976,1630162,Anthony Edwards,21.7441,0.7439,0.5621,0.5519,14.6292
+ATL,Atlanta Hawks,East,46,36,0.5610,1630552,Jalen Johnson,20.3796,0.8780,0.5670,0.5432,14.5831
+TOR,Toronto Raptors,East,46,36,0.5610,1630567,Scottie Barnes,19.2331,0.9756,0.5526,0.5404,14.7773
+PHX,Phoenix Suns,West,45,37,0.5488,1631109,Mark Williams,21.8729,0.7317,0.5050,0.5416,14.4193
+PHI,Philadelphia 76ers,East,45,37,0.5488,203954,Joel Embiid,24.7329,0.4634,0.5768,0.5177,14.7727
+ORL,Orlando Magic,East,45,37,0.5488,1630532,Franz Wagner,19.2615,0.4146,0.5480,0.5264,14.4657
+CHA,Charlotte Hornets,East,44,38,0.5366,1630163,LaMelo Ball,19.8587,0.8780,0.5983,0.5298,14.9498
+MIA,Miami Heat,East,43,39,0.5244,1642276,Kel'el Ware,20.0228,0.9390,0.5153,0.5497,14.9071
+LAC,LA Clippers,West,42,40,0.5122,202695,Kawhi Leonard,27.8891,0.7927,0.5757,0.5398,14.3411
+POR,Portland Trail Blazers,West,42,40,0.5122,1642270,Donovan Clingan,20.9109,0.9390,0.5199,0.5374,13.5633
+GSW,Golden State Warriors,West,37,45,0.4512,202710,Jimmy Butler III,23.5139,0.4634,0.5632,0.5445,14.1220
+MIL,Milwaukee Bucks,East,32,50,0.3902,203507,Giannis Antetokounmpo,32.5588,0.4390,0.5816,0.5534,12.9047
+CHI,Chicago Bulls,East,31,51,0.3780,1630200,Tre Jones,18.6294,0.7927,0.5366,0.5488,13.9576
+NOP,New Orleans Pelicans,West,26,56,0.3171,1629627,Zion Williamson,22.6205,0.7561,0.5106,0.5234,14.0584
+DAL,Dallas Mavericks,West,26,56,0.3171,1629655,Daniel Gafford,18.7752,0.6707,0.4982,0.5297,13.8940
+MEM,Memphis Grizzlies,West,25,57,0.3049,1642285,Cam Spencer,17.2790,0.8780,0.5200,0.5320,14.2468
+SAC,Sacramento Kings,West,22,60,0.2683,201942,DeMar DeRozan,17.8216,0.9390,0.5399,0.5084,13.5557
+UTA,Utah Jazz,West,22,60,0.2683,1628374,Lauri Markkanen,21.0160,0.5122,0.5330,0.5359,13.7014
+BKN,Brooklyn Nets,East,20,62,0.2439,1629008,Michael Porter Jr.,19.9480,0.6341,0.5303,0.5063,12.1240
+IND,Indiana Pacers,East,19,63,0.2317,1627783,Pascal Siakam,18.5350,0.7561,0.5438,0.5262,13.0824
+WAS,Washington Wizards,East,17,65,0.2073,1642259,Alex Sarr,19.2989,0.5854,0.5326,0.5377,13.1724
