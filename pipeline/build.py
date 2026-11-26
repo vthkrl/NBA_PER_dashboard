@@ -67,6 +67,14 @@ def compute_per(p, lg):
     return aper * 15 / lg_aper
 
 
+def seed_band(seed):
+    if seed <= 6:
+        return "Playoffs (1-6)"
+    if seed <= 10:
+        return "Play-in (7-10)"
+    return "Lottery (11-15)"
+
+
 def efg(fgm, fg3m, fga):
     return (fgm + 0.5 * fg3m) / fga
 
@@ -77,7 +85,7 @@ def main():
                      measure_type_detailed_defense="Advanced")[0]
     standings = fetch("standings", leaguestandingsv3.LeagueStandingsV3)[0]
     teams = teams.merge(advanced[["TEAM_ID", "PACE"]], on="TEAM_ID")
-    teams = teams.merge(standings[["TeamID", "Conference"]], left_on="TEAM_ID", right_on="TeamID")
+    teams = teams.merge(standings[["TeamID", "Conference", "PlayoffRank"]], left_on="TEAM_ID", right_on="TeamID")
 
     league = teams[["AST", "FGM", "FGA", "FTM", "FTA", "PTS", "OREB", "DREB", "REB", "TOV", "PF"]].sum()
     league["PACE"] = teams.PACE.mean()
@@ -123,6 +131,8 @@ def main():
             "wins": team.W,
             "losses": team.L,
             "win_pct": team.W / (team.W + team.L),
+            "seed": team.PlayoffRank,
+            "seed_band": seed_band(team.PlayoffRank),
             "best_player_id": best.PLAYER_ID,
             "best_player": best.PLAYER_NAME,
             "best_per": best.PER,

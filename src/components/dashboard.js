@@ -5,6 +5,7 @@ const WIN_DOMAIN = [0.15, 0.85];
 const formatWin = (v) => d3.format(".3f")(v).slice(1);
 const lastName = (name) => name.split(" ").slice(1).join(" ");
 const headshot = (id) => `https://cdn.nba.com/headshots/nba/latest/260x190/${id}.png`;
+const BANDS = ["Playoffs (1-6)", "Play-in (7-10)", "Lottery (11-15)"];
 
 export function dashboard(teams, width) {
   let hovered = null;
@@ -53,16 +54,17 @@ export function dashboard(teams, width) {
 
   function tooltipHtml(d, showPhoto) {
     const pct = (v) => (v * 100).toFixed(1) + "%";
-    const gap = (d.tm8_efg_on - d.tm8_efg_off) * 100;
+    const diff = gap(d) * 100;
     return `
       ${showPhoto ? `<img src="${headshot(d.best_player_id)}" alt="">` : ""}
       <strong>${d.best_player}</strong>, ${d.team_name} (${d.wins}–${d.losses})
       <table>
         <tr><td>Win%</td><td>${formatWin(d.win_pct)}</td></tr>
+        <tr><td>Conference seed</td><td>${d.seed} · ${d.seed_band}</td></tr>
         <tr><td>Best player PER</td><td>${d.best_per.toFixed(1)}</td></tr>
         <tr><td>Games played</td><td>${Math.round(d.best_gp_pct * 100)}%</td></tr>
         <tr><td>Teammate eFG%, off → on</td><td>${pct(d.tm8_efg_off)} → ${pct(d.tm8_efg_on)}</td></tr>
-        <tr><td>On − off gap</td><td>${gap > 0 ? "+" : ""}${gap.toFixed(1)} pts</td></tr>
+        <tr><td>On − off gap</td><td>${diff > 0 ? "+" : ""}${diff.toFixed(1)} pts</td></tr>
         <tr><td>Rest-of-roster PER</td><td>${d.roster_per.toFixed(1)}</td></tr>
       </table>`;
   }
@@ -99,12 +101,13 @@ export function dashboard(teams, width) {
     dots.append("circle").attr("r", radius).attr("fill", (d) => color(d.conference));
     addInteractions(dots, photo);
 
-    const nearEdge = (d) => x(xValue(d)) > w - 60;
+    const labelBox = placeLabels(
+      teams.map((d) => ({team: d.team, cx: x(xValue(d)), cy: y(d.win_pct), r: radius(d)})),
+      w - m.right);
     svg.append("g").selectAll("text").data(teams).join("text")
       .attr("class", "team mark label")
-      .attr("x", (d) => x(xValue(d)) + (nearEdge(d) ? -1 : 1) * (radius(d) + 3))
-      .attr("text-anchor", (d) => (nearEdge(d) ? "end" : "start"))
-      .attr("y", (d) => y(d.win_pct) + 3)
+      .attr("x", (d) => labelBox.get(d.team).x)
+      .attr("y", (d) => labelBox.get(d.team).y + 8)
       .text((d) => d.team);
 
     return {svg, x, y, m};
@@ -115,7 +118,7 @@ export function dashboard(teams, width) {
     "Dots = each team's highest PER player. \n Dot size = percentage of team games played by that player");
   const rowBC = root.append("div").attr("class", "row");
   const panelB = panel(rowBC, "B: Who improves their teammates the most?",
-    "Each star player's teammates' effective field goal %.");
+    "Change in teammates' effective field goal % when the star is on the court. Rows grouped by conference seed.");
   const panelC = panel(rowBC, "C: Who had the most help?",
     "Minutes-weighted average PER of each team's other players.");
 
@@ -142,66 +145,101 @@ export function dashboard(teams, width) {
     });
   const brushLayer = A.svg.append("g").call(brush).lower();
 
+  const rowHeight = 17, top = 30, bottom = 30, bandGap = 20;
+  const bHeight = top + bottom + rowHeight * teams.length + bandGap * BANDS.length;
+
   {
     const sortOptions = {
       "Team win%": (d) => d.win_pct,
       "Best player PER": (d) => d.best_per,
-      "On − off gap": (d) => d.tm8_efg_on - d.tm8_efg_off,
+      "On − off gap": (d) => gap(d),
     };
     const select = panelB.select(".subtitle").append("label").text(" Sort:").append("select");
     select.selectAll("option").data(Object.keys(sortOptions)).join("option").text((key) => key);
 
-    const rowHeight = 17, top = 30, bottom = 30, labelWidth = 160;
-    const h = top + bottom + rowHeight * teams.length;
-    const mid = halfWidth / 2;
-    const maxEfg = d3.max(teams, (d) => Math.max(d.tm8_efg_on, d.tm8_efg_off));
-    const xOff = d3.scaleLinear([0, maxEfg], [mid - labelWidth / 2, 10]).nice();
-    const xOn = d3.scaleLinear(xOff.domain(), [mid + labelWidth / 2, halfWidth - 10]);
-    const y = d3.scaleBand().range([top, h - bottom]).padding(0.2);
-    const sortRows = (key) => y.domain(d3.sort(teams, (d) => -sortOptions[key](d)).map((d) => d.team));
+    const labelWidth = 150;
+    const maxGap = d3.max(teams, (d) => Math.abs(gap(d)));
+    const x = d3.scaleLinear([-maxGap, maxGap], [labelWidth, halfWidth - 10]).nice();
+    const band = (d) => BANDS.indexOf(d.seed_band);
+
+    let rowY = new Map();
+    function sortRows(key) {
+      const sorted = d3.sort(teams, band, (d) => -sortOptions[key](d));
+      rowY = new Map(sorted.map((d, i) => [d.team, top + i * rowHeight + (band(d) + 1) * bandGap]));
+    }
     sortRows("Team win%");
 
-    const svg = panelB.append("svg").attr("width", halfWidth).attr("height", h)
+    const svg = panelB.append("svg").attr("width", halfWidth).attr("height", bHeight)
       .on("click", clearSelection);
-    svg.append("g").attr("transform", `translate(0,${h - bottom})`).call(d3.axisBottom(xOff).ticks(3, "%"));
-    svg.append("g").attr("transform", `translate(0,${h - bottom})`).call(d3.axisBottom(xOn).ticks(3, "%"));
-    svg.append("text").attr("class", "axis-title").attr("x", 10).attr("y", 12).text("◀ Star off court");
-    svg.append("text").attr("class", "axis-title").attr("x", halfWidth - 10).attr("y", 12)
-      .attr("text-anchor", "end").text("Star on court ▶");
+    svg.append("g").attr("transform", `translate(0,${bHeight - bottom})`)
+      .call(d3.axisBottom(x).ticks(6).tickFormat((v) => (v === 0 ? "0" : d3.format("+.0%")(v)))
+        .tickSize(-(bHeight - top - bottom)));
+    svg.append("line").attr("class", "zero")
+      .attr("x1", x(0)).attr("x2", x(0)).attr("y1", top).attr("y2", bHeight - bottom);
+    svg.append("text").attr("class", "axis-title").attr("x", x(0) - 6).attr("y", 12)
+      .attr("text-anchor", "end").text("◀ Worse with star on");
+    svg.append("text").attr("class", "axis-title").attr("x", x(0) + 6).attr("y", 12)
+      .text("Better with star on ▶");
+
+    BANDS.forEach((name, i) => {
+      const before = teams.filter((d) => band(d) < i).length;
+      svg.append("text").attr("class", "band-label")
+        .attr("x", 0).attr("y", top + before * rowHeight + (i + 1) * bandGap - 6).text(name);
+    });
 
     const rows = svg.append("g").selectAll("g").data(teams).join("g")
       .attr("class", "team mark")
-      .attr("transform", (d) => `translate(0,${y(d.team)})`);
-    rows.append("rect").attr("class", "hit").attr("width", halfWidth).attr("height", y.bandwidth());
-    rows.append("rect").attr("class", "off-bar").attr("fill", (d) => color(d.conference))
-      .attr("x", (d) => xOff(d.tm8_efg_off)).attr("width", (d) => xOff(0) - xOff(d.tm8_efg_off))
-      .attr("height", y.bandwidth());
-    rows.append("rect").attr("class", "on-bar").attr("fill", (d) => color(d.conference))
-      .attr("x", xOn(0)).attr("width", (d) => xOn(d.tm8_efg_on) - xOn(0))
-      .attr("height", y.bandwidth());
-    rows.append("line").attr("class", "off-tick")
-      .attr("x1", (d) => xOn(d.tm8_efg_off)).attr("x2", (d) => xOn(d.tm8_efg_off))
-      .attr("y1", -2).attr("y2", y.bandwidth() + 2);
-    const labels = rows.append("text").attr("x", mid).attr("y", y.bandwidth() / 2).attr("dy", "0.35em")
-      .attr("text-anchor", "middle");
+      .attr("transform", (d) => `translate(0,${rowY.get(d.team)})`);
+    rows.append("rect").attr("class", "hit").attr("width", halfWidth).attr("height", rowHeight);
+    rows.append("rect").attr("class", "bar").attr("fill", (d) => color(d.conference))
+      .attr("x", (d) => Math.min(x(0), x(gap(d)))).attr("width", (d) => Math.abs(x(gap(d)) - x(0)))
+      .attr("y", 2).attr("height", rowHeight - 4);
+    const labels = rows.append("text").attr("x", 10).attr("y", rowHeight / 2).attr("dy", "0.35em");
     labels.append("tspan").attr("font-weight", 700).text((d) => d.team + " ");
     labels.append("tspan").attr("fill", "#888").text((d) => lastName(d.best_player));
     addInteractions(rows, true);
 
     select.on("change", (event) => {
       sortRows(event.target.value);
-      rows.transition().duration(600).attr("transform", (d) => `translate(0,${y(d.team)})`);
+      rows.transition().duration(600).attr("transform", (d) => `translate(0,${rowY.get(d.team)})`);
     });
   }
 
   const C = scatter(panelC, {
-    w: halfWidth, h: 30 + 30 + 17 * teams.length,
+    w: halfWidth, h: bHeight,
     xValue: (d) => d.roster_per, xTitle: "Roster PER without the star (minutes-weighted)",
     radius: () => 5, photo: false,
   });
   C.svg.on("click", clearSelection);
 
   return root.node();
+}
+
+function gap(d) {
+  return d.tm8_efg_on - d.tm8_efg_off;
+}
+
+function placeLabels(dots, maxX, width = 20, height = 10) {
+  const boxes = new Map();
+  const hitsDot = (b, dot) => {
+    const nx = Math.max(b.x, Math.min(dot.cx, b.x + width));
+    const ny = Math.max(b.y, Math.min(dot.cy, b.y + height));
+    return Math.hypot(dot.cx - nx, dot.cy - ny) < dot.r;
+  };
+  const hitsBox = (a, b) => Math.abs(a.x - b.x) < width && Math.abs(a.y - b.y) < height;
+  for (const {team, cx, cy, r} of dots) {
+    const options = [
+      {x: cx + r + 3, y: cy - height / 2},
+      {x: cx - r - 3 - width, y: cy - height / 2},
+      {x: cx - width / 2, y: cy - r - height - 1},
+      {x: cx - width / 2, y: cy + r + 1},
+    ];
+    const cost = (b) => (b.x + width > maxX ? 100 : 0)
+      + dots.filter((dot) => hitsDot(b, dot)).length
+      + [...boxes.values()].filter((other) => hitsBox(b, other)).length;
+    boxes.set(team, d3.least(options, cost));
+  }
+  return boxes;
 }
 
 function panel(parent, title, subtitle) {

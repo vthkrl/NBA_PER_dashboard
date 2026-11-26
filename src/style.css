@@ -28,12 +28,12 @@ h2 { font-size: 22px; margin: 0; }
 .dash .fit { stroke: #111; stroke-opacity: 0.3; stroke-width: 1.5; }
 .dash circle { stroke: white; stroke-width: 1.5; }
 .dash .hit { fill: transparent; stroke: none; cursor: pointer; }
-.dash .off-bar { opacity: 0.4; }
-.dash .off-tick { stroke: #111; stroke-width: 2; }
+.dash .zero { stroke: #111; }
+.dash .band-label { font-weight: 700; text-transform: uppercase; fill: #555; }
 .dash select { margin-left: 6px; }
 
 .dash.has-focus .mark:not(.focus) { opacity: 0.15; }
-.dash .mark.focus circle:not(.hit), .dash .mark.focus .on-bar { stroke: #111; stroke-width: 2; }
+.dash .mark.focus circle:not(.hit), .dash .mark.focus .bar { stroke: #111; stroke-width: 2; }
 
 .dash .label { font-size: 9px; fill: #666; paint-order: stroke; stroke: white; stroke-width: 2px; pointer-events: none; }
 .dash .label.focus { font-size: 11px; font-weight: 700; fill: #111; }
