@@ -1,3 +1,0 @@
-Feedback log:
-
-Professor Raz told me to change the east/west visual split to green and orange instead of red and blue for colorblind accessibility.
